@@ -4,66 +4,65 @@ import pickle
 import time
 
 
-def get_tf(Message, Label):
+def get_tf(message, label):
       
     # empty Term Frequency Dictionary
-    TFdict = {}
+    tf_dict = {}
     
-    for word in Message:
+    for word in message:
         # check if word is NOT in dict, than add
-        if word not in TFdict:
+        if word not in tf_dict:
             # with Label the  TF get's his special weight
-            TFdict[word] = (Message.count(word)/len(Message)) * int(Label)
+            tf_dict[word] = (message.count(word)/len(message)) * int(label)
         
-    return TFdict
+    return tf_dict
 
 def get_idf(data):
 
     # empty IDF Dictionary
-    IDFdict = {}
+    idf_dict = {}
 
     # initialize dictionary with all unique words from all entries
     for index, row in data.iterrows():
         for word in row[3]:
-            if word not in IDFdict:
-                IDFdict[word] = 0
+            if word not in idf_dict:
+                idf_dict[word] = 0
     
-    # calculate the Inverse Document Frequency with each word
+    # calculate the Inverse Document Frequency with each word 
+    # get amount of rows in DF
     doc_count = data.shape[0]
 
-    for word in IDFdict:
+    for word in idf_dict:
         count = 0
         for index, row in data.iterrows():
             if word in row[3]:
                 count += 1
-            else:
-                count = 1
-        IDFdict[word] = math.log(doc_count / count)
+        idf_dict[word] = math.log(doc_count / count)
     
-    return IDFdict
+    return idf_dict
 
 def calc_wdf(data):
     # produce IDF with given data
-    IDFdict = get_idf(data)
-    TF_comb = {}
+    idf_dict = get_idf(data)
+    tf_comb = {}
 
     # iter over rows in data
     for index, row in data.iterrows():
         # build TF for each row
-        TFdict = get_tf(row[3],row[2])
-        for word in TFdict:
-            if word not in TF_comb:
-                TF_comb[word] = [ TFdict.get(word), 1 ]
+        tf_dict = get_tf(row[3],row[2])
+        for word in tf_dict:
+            if word not in tf_comb:
+                tf_comb[word] = [ tf_dict.get(word), 1 ]
             else:
-                TF_comb[word] = [ TF_comb.get(word)[0] + TFdict.get(word), TF_comb.get(word)[1] + 1 ]
+                tf_comb[word] = [ tf_comb.get(word)[0] + tf_dict.get(word), tf_comb.get(word)[1] + 1 ]
 
-    for word in IDFdict:
+    for word in idf_dict:
         # calculate Weighted Document Frequency
-        IDFdict[word] = IDFdict.get(word) * ( TF_comb.get(word)[0] / TF_comb.get(word)[1] )
+        idf_dict[word] = idf_dict.get(word) * ( tf_comb.get(word)[0] / tf_comb.get(word)[1] )
                 
-    return IDFdict
+    return idf_dict
 
-def call(WDF, news):
+def get_prediction(wdf, news):
     # calculate the Term Frequency of news
     news_tf = get_tf(news, 1)
     prediction = 0
@@ -71,9 +70,9 @@ def call(WDF, news):
     # iter each word in list news
     for word in news:
         # check wether the word is in the Weighted Document Frequency
-        if word in WDF:
+        if word in wdf:
             # calculate predicion
-            prediction += WDF[word] * news_tf[word]
+            prediction += wdf[word] * news_tf[word]
 
     # check if prediction is positive or negative and then assign to result
     if prediction >= 0:
@@ -87,7 +86,7 @@ def create_save_wdf(data, length=None):
         data = data[:length]
     
     start_time = time.time()
-    WDF = calc_wdf(data)
+    wdf = calc_wdf(data)
     required_time = (time.time() - start_time)/60
 
     output = f"""
@@ -103,12 +102,12 @@ def create_save_wdf(data, length=None):
     outputfile.write(output) 
     outputfile.close()
 
-    # safe WDF to a pickle file
-    pickle.dump(WDF, open('WDF.pkl', 'wb'))
+    # safe wdf to a pickle file
+    pickle.dump(wdf, open('wdf.pkl', 'wb'))
 
 def load_wdf():
 
-    return pickle.load( open('WDF.pkl', 'rb') )
+    return pickle.load( open('wdf.pkl', 'rb') )
 
 def test_model(wdf, testdata):
     # initialize accuracy terms
@@ -120,7 +119,7 @@ def test_model(wdf, testdata):
     for index, row in testdata.iterrows():
         news = row[3]
         original_label = row[2]
-        prediction_label = call(wdf, news)
+        prediction_label = get_prediction(wdf, news)
 
         if original_label == -1 and prediction_label == -1:
             tn += 1
