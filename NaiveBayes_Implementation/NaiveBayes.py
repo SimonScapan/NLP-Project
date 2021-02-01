@@ -22,7 +22,10 @@ def binary_class_infos(data,label_column_name,label_1,label_2):
     
     return len_all, len_positive, len_negative, prob_positive, prob_negative
 
-def calc_document_probabilities(document,positive_corpus,negative_corpus,len_positive,len_negative,threshold,smoothing,without):
+def calc_document_probabilities(document,positive_corpus,negative_corpus,threshold,smoothing,without):
+    # get count of all words in each corpus
+    len_positive = sum(positive_corpus.values())
+    len_negative = sum(negative_corpus.values())
     positive_weights=[]
     negative_weights=[]
     
@@ -129,7 +132,7 @@ def eval_naive_bayes(data,positive_corpus,negative_corpus, smoothing, without):
             words = row["News"]
             label = row["Label"]
             # Calculate probabilities for all words and both classes
-            positive_document_prob,negative_document_prob = calc_document_probabilities(words,positive_corpus,negative_corpus,len_positive,len_negative,threshold,smoothing,without)
+            positive_document_prob,negative_document_prob = calc_document_probabilities(words,positive_corpus,negative_corpus,threshold,smoothing,without)
             # Sumup the results
             results={1:positive_document_prob*prob_positive,-1:negative_document_prob*prob_negative}
             # Get predicted label by highest probability and add actual label for comparison

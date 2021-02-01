@@ -2,11 +2,11 @@
     |--------------------------------------------------------------
     | the overall amount of data ist: 397
     |--------------------------------------------------------------
-    | the true positive_corpus rate is:      109
-    | the true negative_corpus rate is:      79
-    | the false positive_corpus rate is:     99
-    | the false negative_corpus rate is:     110
+    | the true positive_corpus rate is:      215
+    | the true negative_corpus rate is:      11
+    | the false positive_corpus rate is:     167
+    | the false negative_corpus rate is:     4
     |--------------------------------------------------------------
-    | the accuracy is:                0.473551637279597
+    | the accuracy is:                0.5692695214105793
     |--------------------------------------------------------------
     
